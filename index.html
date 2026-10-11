@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>universeChat</title>
+<style>
+:root{--bg:#fff;--fg:#0f0f10;--mut:#737378;--line:#ebebef;--in:#f1f1f4;--g:linear-gradient(135deg,#8a3ff0,#3d6cf5);--ring:linear-gradient(45deg,#ffc400,#ff2d75,#a02fe0)}
+@media(prefers-color-scheme:dark){:root{--bg:#0c0c0e;--fg:#f5f5f7;--mut:#9a9aa2;--line:#242428;--in:#222227}}
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--fg);display:flex;height:100vh;height:100dvh;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid #6a45f0;outline-offset:2px}
+.mut{color:var(--mut);font-size:13px}
+#welcome{position:fixed;top:0;right:0;bottom:0;left:0;z-index:9;background:var(--bg);display:grid;place-items:center;padding:24px}
+#wf{width:min(340px,100%);text-align:center;display:flex;flex-direction:column;gap:12px}
+.logo{width:84px;height:84px;margin:0 auto 4px;border-radius:50%;background:var(--ring);display:grid;place-items:center;color:#fff;font-size:40px;font-weight:700}
+#wf h1{font-size:26px;letter-spacing:-.02em}
+#wn{padding:13px 16px;border-radius:14px;border:1px solid var(--line);background:var(--in);color:var(--fg);font:inherit;text-align:center}
+#wgo{padding:13px;border-radius:14px;background:var(--g);color:#fff;font-weight:600}
+#side{width:380px;border-right:1px solid var(--line);display:flex;flex-direction:column;flex:none}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px}
+#meb{font-size:20px;font-weight:700;letter-spacing:-.02em;max-width:75%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ic{width:38px;height:38px;border-radius:50%;font-size:20px;display:grid;place-items:center}
+.ic:hover{background:var(--in)}
+#q{margin:6px 16px 10px;padding:10px 14px;border-radius:12px;border:0;background:var(--in);color:var(--fg);font:inherit}
+#list{overflow:auto;flex:1}
+.row{display:flex;gap:12px;align-items:center;padding:10px 18px;cursor:pointer}
+.row:hover,.row.on{background:var(--in)}
+.rt{display:flex;flex-direction:column;min-width:0}
+.rt span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av{flex:none;border-radius:50%;padding:2px;background:var(--ring)}
+.av i{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;border:2px solid var(--bg);color:#fff;font-style:normal;font-weight:600}
+.row.add .av i{background:var(--g)}
+.empty{padding:40px 24px;text-align:center;color:var(--mut)}
+#chat{flex:1;display:flex;flex-direction:column;min-width:0}
+#none{margin:auto;text-align:center;color:var(--mut);padding:24px}
+#none b{display:block;color:var(--fg);font-size:20px;margin-bottom:6px}
+#conv{flex:1;display:flex;flex-direction:column;min-height:0}
+#hd{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.back{display:none;font-size:30px;line-height:1}
+#msgs{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:6px}
+.b{align-self:flex-end;max-width:72%;background:var(--g);color:#fff;padding:9px 14px;border-radius:22px 22px 6px 22px;word-break:break-word;position:relative;user-select:none}
+.b.like{margin-bottom:12px}
+.b.f{padding:6px}
+.b.f .tx{padding:4px 8px}
+.b img,.b video{display:block;max-width:100%;max-height:340px;border-radius:16px}
+.fc{display:flex;gap:10px;align-items:center;padding:6px 8px}
+.fc a{color:#fff}
+.fc small{opacity:.8;display:block}
+.re{position:absolute;right:8px;bottom:-12px;background:var(--bg);border-radius:12px;padding:0 4px;font-size:14px;box-shadow:0 0 0 1px var(--line)}
+form#f{display:flex;align-items:center;gap:8px;margin:10px 14px 14px;padding:6px 8px 6px 6px;border:1px solid var(--line);border-radius:28px}
+#plus{width:38px;height:38px;border-radius:50%;background:var(--g);color:#fff;font-size:22px;flex:none}
+#t{flex:1;border:0;background:none;color:var(--fg);font:inherit;padding:8px 4px;min-width:0}
+#go{color:#6a45f0;font-weight:600;padding:8px 12px;opacity:.4}
+#go.on{opacity:1}
+#chat.drag{outline:3px dashed #8a3ff0;outline-offset:-8px}
+dialog{border:0;border-radius:18px;padding:22px;width:min(360px,92vw);background:var(--bg);color:var(--fg)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h2{font-size:18px;margin-bottom:14px}
+dialog label{display:block;margin-bottom:12px;font-size:13px;color:var(--mut)}
+dialog input{display:block;width:100%;margin-top:4px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--in);color:var(--fg);font:inherit}
+#err{color:#e0245e;font-size:13px;min-height:18px}
+.act{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.act button{padding:9px 16px;border-radius:10px}
+.act .ok{background:var(--g);color:#fff}
+@media(max-width:760px){
+ #side{width:100%;border:0}
+ #chat{display:none;width:100%}
+ body.chat #side{display:none}
+ body.chat #chat{display:flex}
+ .back{display:block}
+ .b{max-width:85%}
+}
+@media(prefers-reduced-motion:no-preference){.b{animation:pop .15s ease-out}@keyframes pop{from{transform:scale(.94);opacity:0}}}
+.who{display:flex;flex-direction:column;align-items:flex-start;min-width:0;max-width:75%}
+#meb{max-width:100%}
+#net{font-size:12px}
+.avw{position:relative;flex:none}
+.dot{position:absolute;right:2px;bottom:2px;width:13px;height:13px;border-radius:50%;background:#2bd45f;border:2px solid var(--bg)}
+.badge{margin-left:auto;background:#ff2d75;color:#fff;border-radius:11px;min-width:22px;padding:0 7px;text-align:center;font-size:12px;font-weight:700}
+.b.in{align-self:flex-start;background:var(--in);color:var(--fg);border-radius:22px 22px 22px 6px}
+.b.in .fc a{color:#6a45f0}
+.del{position:absolute;top:50%;left:-34px;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:var(--in);font-size:13px;opacity:0}
+.b.in .del{left:auto;right:-34px}
+.b:hover .del,.del:focus-visible{opacity:1}
+@media(hover:none){.del{opacity:.6}}
+#werr,#err{color:#e0245e;font-size:13px;min-height:18px}
+#wu{padding:13px 16px;border-radius:14px;border:1px solid var(--line);background:var(--in);color:var(--fg);font:inherit;text-align:center}
+#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:14px;z-index:20;max-width:90vw;text-align:center}
+*{-webkit-tap-highlight-color:transparent}
+button{touch-action:manipulation}
+.sva{display:block;padding:4px 8px 2px;color:inherit;font-size:13px;text-decoration:underline}
+.b.in .sva{color:#6a45f0}
+.tb{display:flex}
+.by{font-size:12px;font-weight:700;opacity:.8;margin-bottom:2px}
+.gi{display:flex;align-items:center;gap:10px;padding:7px 2px;color:var(--fg);font-size:15px}
+dialog .gi input{width:auto;margin:0;display:inline-block}
+#gl{max-height:40vh;overflow:auto;margin-bottom:8px}
+#gerr{color:#e0245e;font-size:13px;min-height:18px}
+#ring{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:16;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:18px;padding:14px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px;text-align:center;min-width:260px;max-width:92vw}
+#ring button{padding:9px 16px;border-radius:10px;background:var(--in)}
+#ring .ok{background:var(--g);color:#fff}
+#call{position:fixed;top:12px;left:50%;transform:translateX(-50%);width:min(440px,94vw);background:#16161a;color:#fff;border-radius:20px;padding:14px;z-index:15;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+#vid{width:100%;max-height:45vh;border-radius:12px;background:#000;display:block;margin-bottom:10px}
+.ci{display:flex;flex-direction:column;align-items:center;margin-bottom:10px}
+.cb{display:flex;justify-content:center;gap:14px}
+.cb button{width:48px;height:48px;border-radius:50%;background:#2c2c33;font-size:20px;color:#fff}
+.cb .off,#cen{background:#e0245e}
+#upd{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:14;display:flex;align-items:center;gap:12px;background:var(--g);color:#fff;border-radius:22px;padding:9px 12px 9px 18px;box-shadow:0 6px 22px rgba(0,0,0,.3);max-width:94vw;font-size:14px}
+#upd button{background:#fff;color:#4a2fd1;border-radius:14px;padding:6px 14px;font-weight:700;white-space:nowrap}
+</style>
+</head>
+<body>
+<div id="welcome" hidden>
+ <form id="wf" autocomplete="off">
+  <div class="logo">u</div>
+  <h1>universeChat</h1>
+  <p class="mut">Crie seu perfil. Seus amigos vão te achar pelo @usuário.</p>
+  <input id="wn" maxlength="24" placeholder="Seu nome" aria-label="Seu nome"><input id="wu" maxlength="20" placeholder="Seu @usuário (único)" aria-label="Seu usuário"><div id="werr"></div>
+  <button id="wgo" type="submit">Entrar</button>
+ </form>
+</div>
+<aside id="side">
+ <div class="top"><div class="who"><button id="meb" title="Trocar nome ou @usuário"></button><span id="net" class="mut"></span></div><div class="tb"><button class="ic" id="snd" aria-label="Som de mensagem">🔔</button><button class="ic" id="newg" aria-label="Novo grupo" title="Novo grupo">👥</button><button class="ic" id="add" aria-label="Adicionar pessoa" title="Adicionar pessoa">✎</button></div></div>
+ <input id="q" type="search" placeholder="Buscar ou adicionar pessoa" aria-label="Buscar">
+ <div id="list"></div>
+</aside>
+<main id="chat">
+ <div id="none"><b>Suas mensagens</b>Escolha uma conversa ou adicione alguém para começar.</div>
+ <div id="conv" hidden>
+  <div id="hd"></div>
+  <div id="msgs"></div>
+  <form id="f" autocomplete="off">
+   <button type="button" id="plus" aria-label="Enviar arquivos" title="Enviar arquivos (sem limite de tamanho)">+</button>
+   <input id="t" placeholder="Mensagem..." aria-label="Mensagem">
+   <button id="go" type="submit">Enviar</button>
+   <input id="file" type="file" multiple hidden>
+  </form>
+ </div>
+</main>
+<dialog id="dlg">
+ <h2>Adicionar pessoa</h2>
+ <label>Usuário do seu amigo<input id="us" maxlength="20" placeholder="ex: maria_silva"></label>
+ <label>Nome (opcional)<input id="nm" maxlength="30"></label>
+ <div id="err"></div>
+ <div class="act"><button type="button" id="cx">Cancelar</button><button type="button" class="ok" id="ok">Adicionar</button></div>
+</dialog>
+<dialog id="gdlg">
+ <h2 id="gt">Novo grupo</h2>
+ <label id="gnl">Nome do grupo<input id="gn" maxlength="30"></label>
+ <div id="gl"></div>
+ <div id="gerr"></div>
+ <div class="act"><button type="button" id="gx">Fechar</button><button type="button" class="ok" id="gok">Criar grupo</button></div>
+</dialog>
+<div id="ring" hidden><b id="rt"></b><span class="mut">está te ligando...</span><div class="act"><button id="rno" type="button">Recusar</button><button id="rok" class="ok" type="button">Atender</button></div></div>
+<div id="call" hidden>
+ <div id="cv" hidden><video id="vid" autoplay playsinline></video></div>
+ <div class="ci"><b id="ctit"></b><span id="cst" class="mut"></span></div>
+ <div class="cb"><button id="cmu" type="button" title="Microfone">🎤</button><button id="csc" type="button" title="Compartilhar tela">🖥</button><button id="cfs" type="button" title="Tela cheia">⛶</button><button id="cen" type="button" title="Desligar">📞</button></div>
+ <div id="aud"></div>
+</div>
+<div id="upd" hidden><span id="updt"></span><button id="updb" type="button" hidden></button></div>
+<div id="toast" hidden></div>
+<script src="peerjs.min.js"></script>
+<script>
+if(!Element.prototype.replaceChildren)Element.prototype.replaceChildren=function(){while(this.firstChild)this.removeChild(this.firstChild);this.append.apply(this,arguments)};
+if(!Array.prototype.flat)Array.prototype.flat=function(){return this.reduce(function(a,x){return a.concat(Array.isArray(x)?x.flat():x)},[])};
+const nativo=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+const conSalvar=(m,el)=>nativo?h('div',{},el,h('a',{class:'sva',href:'#',onclick:ev=>{ev.preventDefault();salvar(m)}},'Salvar / compartilhar')):el;
+async function salvar(m){
+ const f=m.f;if(!f||!f.u)return;
+ if(!nativo){const a=h('a',{href:f.u,download:f.n});document.body.append(a);a.click();a.remove();return}
+ const P2=Capacitor.Plugins,FS=P2.Filesystem,SH=P2.Share;
+ try{
+  aviso('Preparando arquivo...');
+  const blob=await (await fetch(f.u)).blob();
+  const path=m.id+'_'+f.n.replace(/[^\w.\-]+/g,'_');
+  try{await FS.deleteFile({path:path,directory:'CACHE'})}catch(e){}
+  const S=786432;
+  if(!blob.size)await FS.writeFile({path:path,data:'',directory:'CACHE'});
+  for(let o=0;o<blob.size;o+=S){
+   const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(blob.slice(o,o+S))});
+   await FS.appendFile({path:path,data:data,directory:'CACHE'});
+  }
+  const u=await FS.getUri({path:path,directory:'CACHE'});
+  await SH.share({url:u.uri,dialogTitle:'Salvar ou abrir '+f.n});
+ }catch(e){aviso('Não consegui preparar o arquivo.')}
+}
+const $=s=>document.querySelector(s);
+const h=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a){if(k==='class')e.className=a[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),a[k]);else e.setAttribute(k,a[k])}c.flat().filter(x=>x!=null&&x!==false).forEach(x=>e.append(x));return e};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const RX=/^[a-z0-9_]{3,20}$/;
+let C=[],cur=null,U='',USER='';
+try{C=JSON.parse(localStorage.getItem('uc')||'[]');U=localStorage.getItem('uc_me')||'';USER=localStorage.getItem('uc_u')||''}catch(e){}
+const save=()=>{try{localStorage.setItem('uc',JSON.stringify(C.map(c=>({...c,m:c.m.map(m=>m.f?{...m,f:{...m.f,u:null},prog:undefined}:m)}))))}catch(e){}};
+let st;const sv=()=>{clearTimeout(st);st=setTimeout(save,300)};
+addEventListener('pagehide',save);
+const conns={},pend={},rx={},els={};
+const on=u=>!!(conns[u]&&conns[u].open);
+const me=()=>C.find(c=>c.id===cur);
+const hue=s=>{let n=0;for(const ch of s)n=(n*31+ch.charCodeAt(0))%360;return n};
+const av=(c,z=52)=>h('div',{class:'av',style:`width:${z}px;height:${z}px`},h('i',{style:`background:hsl(${hue(c.u||c.id)} 60% 50%);font-size:${z/2.6}px`},c.n[0].toUpperCase()));
+const size=b=>{const u=['B','KB','MB','GB','TB'];let i=0;while(b>=1024&&i<4){b/=1024;i++}return b.toFixed(i?1:0)+' '+u[i]};
+function aviso(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(e._t);e._t=setTimeout(()=>{e.hidden=true},3800)}
+
+/* perfil */
+function boasVindas(msg){
+ $('#werr').textContent=msg||'';$('#wn').value=U;$('#wu').value=USER;
+ $('#wgo').textContent=U&&USER?'Salvar':'Entrar';$('#welcome').hidden=false;(U?$('#wu'):$('#wn')).focus();
+}
+$('#wf').addEventListener('submit',e=>{
+ e.preventDefault();
+ const n=$('#wn').value.trim(),u=$('#wu').value.trim().replace(/^@/,'').toLowerCase();
+ if(!n){$('#werr').textContent='Digite seu nome.';return}
+ if(!RX.test(u)){$('#werr').textContent='O usuário precisa ter de 3 a 20 letras, números ou _ (sem espaço nem ponto).';return}
+ const trocou=u!==USER;U=n;USER=u;
+ try{localStorage.setItem('uc_me',n);localStorage.setItem('uc_u',u)}catch(x){}
+ $('#meb').textContent=n;$('#welcome').hidden=true;
+ if(trocou&&P){P.destroy();P=null;for(const k in conns){try{conns[k].close()}catch(x){}delete conns[k]}list()}
+ Object.values(conns).forEach(c=>c.open&&c.send({t:'hello',n:U}));
+ startNet();
+});
+$('#meb').onclick=()=>boasVindas();
+
+/* rede: conexão direta entre os apps (WebRTC via PeerJS) */
+let P=null,tries=0;
+const rede=t=>{$('#net').textContent=t};
+function startNet(){
+ if(P||!USER)return;
+ if(typeof Peer==='undefined'){rede('● módulo de rede não encontrado');return}
+ rede('● conectando...');
+ P=new Peer('ucht-'+USER);
+ P.on('open',()=>{tries=0;rede('● online · @'+USER);C.forEach(c=>c.g||link(c.u))});
+ P.on('connection',wire);P.on('call',chamadaRecebida);
+ P.on('disconnected',()=>{rede('● sem conexão');setTimeout(()=>{if(P&&!P.destroyed)P.reconnect()},4000)});
+ P.on('error',e=>{
+  if(e.type==='unavailable-id'){
+   P.destroy();P=null;
+   if(++tries<4){rede('● conectando...');setTimeout(startNet,5000)}
+   else{tries=0;rede('● usuário em uso');boasVindas('O @'+USER+' já está em uso. Escolha outro usuário.')}
+  }else if(e.type==='peer-unavailable'){const m=/ucht-([a-z0-9_]+)/.exec(e.message||'');if(m)delete pend[m[1]]}
+  else if(['network','server-error','socket-error','socket-closed'].includes(e.type))rede('● sem conexão com a internet');
+ });
+}
+function link(u){
+ if(!P||!P.open||on(u)||!RX.test(u)||u===USER)return;
+ if(pend[u]&&Date.now()-pend[u]<12000)return;
+ pend[u]=Date.now();wire(P.connect('ucht-'+u));
+}
+function wire(conn){
+ const u=String(conn.peer).slice(5);
+ if(!RX.test(u)||u===USER){conn.close();return}
+ const ok=()=>{conns[u]=conn;delete pend[u];conn.send({t:'hello',n:U});C.forEach(g=>{if(g.g&&g.own===USER&&g.mem.includes(u))conn.send({t:'gnew',gid:g.id,n:g.n,mem:g.mem,own:USER})});estado(u)};
+ if(conn.open)ok();else conn.on('open',ok);
+ conn.on('data',d=>recv(u,d));
+ conn.on('close',()=>{if(conns[u]===conn)delete conns[u];estado(u)});
+ conn.on('error',()=>{});
+}
+function estado(u){list();const c=me();if(c&&(c.u===u||(c.g&&c.mem.includes(u))))cab()}
+function pessoa(u,n){
+ let c=C.find(x=>x.u===u);n=String(n||u).slice(0,30);
+ if(!c){c={id:uid(),n,u,m:[]};C.push(c);sv();list()}
+ else if(!c.custom&&c.n!==n){c.n=n;sv();list();if(c.id===cur)cab()}
+ return c;
+}
+function recv(u,d){
+ if(!d||!d.t)return;
+ if(d.t==='hello'){pessoa(u,d.n);return}
+ if(d.t==='gnew'){novoGrupo(u,d);return}
+ if(/^c(ring|busy|join|in|end)$/.test(d.t)){sinal(u,d);return}
+ if(d.t==='fc'){const r=rx[d.id];if(!r||!d.d)return;r.parts.push(d.d);r.got+=d.d.byteLength;const p=Math.min(99,Math.floor(r.got/(r.m.f.s||1)*100));if(p!==r.m.prog){r.m.prog=p;prog(r.m)}return}
+ if(d.t==='fe'){const r=rx[d.id];if(!r)return;delete rx[d.id];r.m.f.u=URL.createObjectURL(new Blob(r.parts,{type:r.m.f.t}));r.m.prog=null;refazer(r.m);sv();list();return}
+ const c=d.g?grupo(d.g):C.find(x=>!x.g&&x.u===u);
+ if(!c||(c.g&&!c.mem.includes(u)))return;
+ const by=c.g?u:undefined;
+ if(d.t==='msg')add(c,{id:String(d.id),txt:String(d.txt).slice(0,5000),ts:d.ts||Date.now(),in:1,by:by});
+ else if(d.t==='fs'){const m={id:String(d.id),ts:d.ts||Date.now(),in:1,by:by,f:{n:String(d.n),s:+d.s||0,t:String(d.ty||''),u:null},prog:0};rx[m.id]={parts:[],got:0,m:m};add(c,m)}
+ else if(d.t==='del'){const i=c.m.findIndex(m=>m.id===d.id&&m.in&&(!c.g||m.by===u));if(i>=0)remover(c,i)}
+ else if(d.t==='gleave'&&c.g){c.mem=c.mem.filter(x=>x!==u);sv();list();if(c.id===cur)cab()}
+}
+setInterval(()=>{
+ if(!USER)return;if(!P){startNet();return}
+ if(P.open)C.forEach(c=>c.g||link(c.u));else if(P.disconnected&&!P.destroyed)P.reconnect();
+},15000);
+
+/* lista e busca */
+function list(){
+ const q=$('#q').value.trim().toLowerCase().replace(/^@/,''),f=document.createDocumentFragment();
+ const r=q?C.filter(c=>c.n.toLowerCase().includes(q)||(c.u||'').includes(q)):C;
+ r.forEach(c=>{
+  const m=c.m[c.m.length-1];
+  f.append(h('div',{class:'row'+(c.id===cur?' on':''),onclick:()=>open(c.id)},
+   h('div',{class:'avw'},av(c),on1(c)&&h('span',{class:'dot'})),
+   h('div',{class:'rt'},h('b',{},c.n),h('span',{class:'mut'},m?(m.f?(m.in?'Enviou: ':'Você enviou: ')+m.f.n:(m.in?(c.g?nome(m.by)+': ':''):'Você: ')+m.txt):(c.g?c.mem.length+' membros':'@'+c.u))),
+   c.unread?h('span',{class:'badge'},c.unread):null))});
+ if(q&&!C.some(c=>c.u===q))f.append(h('div',{class:'row add',onclick:()=>abrirAdd(q)},
+  h('div',{class:'av',style:'width:52px;height:52px'},h('i',{style:'font-size:24px'},'+')),
+  h('div',{class:'rt'},h('b',{},'Adicionar "'+q+'"'),h('span',{class:'mut'},'Conectar com essa pessoa'))));
+ if(!f.childNodes.length)f.append(h('div',{class:'empty'},'Nenhuma conversa ainda. Toque em ✎ e digite o @usuário de um amigo.'));
+ $('#list').replaceChildren(f);
+}
+let qt;$('#q').addEventListener('input',()=>{clearTimeout(qt);qt=setTimeout(list,80)});
+$('#q').addEventListener('keydown',e=>{if(e.key==='Enter'){const q=e.target.value.trim().toLowerCase().replace(/^@/,'');if(!q)return;const c=C.find(c=>c.u===q)||C.find(c=>c.n.toLowerCase().includes(q));c?open(c.id):abrirAdd(q)}});
+
+/* conversa */
+function cab(){
+ const c=me();if(!c)return;
+ const sub=c.g?c.mem.length+' membros · '+c.mem.filter(x=>x!==USER&&on(x)).length+' online':'@'+c.u+' · '+(on(c.u)?'online':'offline');
+ $('#hd').replaceChildren(h('button',{class:'ic back',onclick:back,'aria-label':'Voltar'},'‹'),
+  h('div',{class:'avw'},av(c,38),on1(c)&&h('span',{class:'dot'})),
+  h('div',{class:'rt'},h('b',{},c.n),h('span',{class:'mut'},sub)),
+  h('button',{class:'ic',style:'margin-left:auto',title:'Ligar','aria-label':'Ligar',onclick:ligar},'📞'),
+  c.g?h('button',{class:'ic',title:'Membros','aria-label':'Membros do grupo',onclick:()=>abrirGrupo(true)},'ⓘ'):null,
+  h('button',{class:'ic',title:c.g?'Sair do grupo':'Apagar conversa','aria-label':'Apagar',onclick:apagarConversa},'🗑'));
+}
+function open(id){
+ cur=id;const c=me();c.unread=0;document.body.classList.add('chat');
+ $('#none').hidden=true;$('#conv').hidden=false;
+ for(const k in els)delete els[k];
+ cab();
+ const f=document.createDocumentFragment();c.m.forEach(m=>f.append(bubble(m)));
+ $('#msgs').replaceChildren(f);rolar();list();$('#t').focus();
+ if(!c.g&&!on(c.u))link(c.u);
+}
+function back(){document.body.classList.remove('chat');cur=null;$('#none').hidden=false;$('#conv').hidden=true;list()}
+const rolar=()=>{const b=$('#msgs');b.scrollTop=b.scrollHeight};
+const info=m=>size(m.f.s)+(m.prog!=null?' · '+(m.in?'Recebendo ':'Enviando ')+m.prog+'%':(m.f.u?'':' · indisponível (só fica na sessão em que foi enviado)'));
+function prog(m){const e=els[m.id],s=e&&e.querySelector('small');if(s)s.textContent=info(m)}
+function fileEl(m){
+ const f=m.f,pronto=f.u&&m.prog==null;
+ if(pronto&&f.t.startsWith('image/'))return conSalvar(m,h('img',{src:f.u,alt:f.n,decoding:'async'}));
+ if(pronto&&f.t.startsWith('video/'))return conSalvar(m,h('video',{src:f.u,controls:'',preload:'metadata'}));
+ return h('div',{class:'fc'},h('span',{style:'font-size:26px'},'📄'),h('div',{},pronto?h('a',nativo?{href:'#',onclick:ev=>{ev.preventDefault();salvar(m)}}:{href:f.u,download:f.n},f.n):h('b',{},f.n),h('small',{},info(m))));
+}
+function curtir(el,m){
+ const o=el.querySelector('.re');
+ if(m.r&&!o)el.append(h('span',{class:'re'},'❤️'));else if(!m.r&&o)o.remove();
+ el.classList.toggle('like',!!m.r);
+}
+function bubble(m){
+ m.id=m.id||uid();
+ const el=h('div',{class:'b'+(m.in?' in':'')+(m.f?' f':''),title:new Date(m.ts).toLocaleString('pt-BR')});
+ els[m.id]=el;
+ if(m.in&&m.by)el.append(h('div',{class:'by'},nome(m.by)));
+ if(m.f)el.append(fileEl(m));
+ if(m.txt)el.append(m.f?h('div',{class:'tx'},m.txt):m.txt);
+ el.append(h('button',{class:'del',title:'Apagar','aria-label':'Apagar mensagem',onclick:ev=>{ev.stopPropagation();apagar(m)}},'🗑'));
+ el.addEventListener('dblclick',()=>{m.r=!m.r;curtir(el,m);sv()});
+ curtir(el,m);return el;
+}
+function refazer(m){const o=els[m.id];if(o)o.replaceWith(bubble(m))}
+function add(c,m){
+ c.m.push(m);
+ if(c.id===cur){$('#msgs').append(bubble(m));rolar()}else c.unread=(c.unread||0)+1;
+ if(m.in)avisoMsg(c,m);
+ sv();list();
+}
+function remover(c,i){
+ const m=c.m.splice(i,1)[0];
+ if(m.f&&m.f.u)URL.revokeObjectURL(m.f.u);
+ if(els[m.id]){els[m.id].remove();delete els[m.id]}
+ delete rx[m.id];sv();list();
+}
+function apagar(m){
+ const c=me();if(!c)return;const i=c.m.indexOf(m);if(i<0)return;
+ if(!confirm(m.in?'Apagar esta mensagem só para você?':'Apagar esta mensagem? Ela também some para '+c.n+' (se ela estiver online).'))return;
+ if(!m.in){if(c.g)c.mem.forEach(x=>{if(x!==USER&&on(x))conns[x].send({t:'del',id:m.id,g:c.id})});else if(on(c.u))conns[c.u].send({t:'del',id:m.id})}
+ remover(c,i);
+}
+function apagarConversa(){
+ const c=me();if(!c)return;
+ if(!confirm(c.g?'Sair do grupo "'+c.n+'" e apagar as mensagens daqui?':'Apagar toda a conversa com '+c.n+' e tirar da sua lista? As mensagens só somem para você.'))return;
+ if(c.g)c.mem.forEach(x=>{if(x!==USER&&on(x))conns[x].send({t:'gleave',g:c.id})});
+ c.m.forEach(m=>{if(m.f&&m.f.u)URL.revokeObjectURL(m.f.u)});
+ C=C.filter(x=>x!==c);const k=!c.g&&conns[c.u];if(k){try{k.close()}catch(e){}delete conns[c.u]}
+ save();back();
+}
+function enviar(){
+ const c=me(),t=$('#t').value.trim();
+ if(!c)return;if(!t){$('#t').focus();return}
+ if(c.g)return enviarG(c,t);
+ if(!on(c.u)){aviso(c.n+' está offline. Tente de novo quando ela abrir o app.');link(c.u);return}
+ const m={id:uid(),txt:t,ts:Date.now()};
+ conns[c.u].send({t:'msg',id:m.id,txt:t,ts:m.ts});
+ $('#t').value='';$('#go').classList.remove('on');add(c,m);$('#t').focus();
+}
+$('#f').addEventListener('submit',e=>{e.preventDefault();enviar()});
+$('#t').addEventListener('input',e=>$('#go').classList.toggle('on',!!e.target.value.trim()));
+
+/* arquivos (sem limite de tamanho, em pedaços) */
+async function mandar(u,f,m,g){
+ const conn=conns[u];if(!conn||!conn.open)return false;
+ const dc=conn.dataChannel,CH=65536;dc.bufferedAmountLowThreshold=1048576;
+ conn.send({t:'fs',id:m.id,n:f.name,s:f.size,ty:f.type||'',ts:m.ts,g:g});
+ for(let o=0;o<f.size;o+=CH){
+  if(!conn.open)return false;
+  conn.send({t:'fc',id:m.id,d:await f.slice(o,o+CH).arrayBuffer()});
+  if(dc.bufferedAmount>4194304)await new Promise(r=>{const t=setTimeout(r,2000);dc.addEventListener('bufferedamountlow',()=>{clearTimeout(t);r()},{once:true})});
+  const p=Math.min(99,Math.floor((o+CH)/(f.size||1)*100));if(p!==m.prog){m.prog=p;prog(m)}
+ }
+ conn.send({t:'fe',id:m.id});return true;
+}
+async function arquivos(files){
+ const c=me();if(!c||!files.length)return;
+ const alvos=c.g?c.mem.filter(x=>x!==USER&&on(x)):[c.u];
+ if(c.g?!alvos.length:!on(c.u)){aviso(c.g?'Ninguém do grupo está online agora.':c.n+' está offline. Tente de novo quando ela abrir o app.');if(!c.g)link(c.u);return}
+ for(const f of [...files]){
+  const m={id:uid(),ts:Date.now(),f:{n:f.name,s:f.size,t:f.type||'',u:URL.createObjectURL(f)},prog:0};
+  add(c,m);
+  let ok=true;for(const x of alvos){if(on(x))ok=(await mandar(x,f,m,c.g?c.id:undefined))&&ok}
+  m.prog=null;refazer(m);
+  if(!ok){aviso('O envio de "'+f.name+'" foi interrompido.');break}
+ }
+}
+$('#plus').onclick=()=>$('#file').click();
+$('#file').addEventListener('change',e=>{const l=[...e.target.files];e.target.value='';arquivos(l)});
+const ch=$('#chat');
+ch.addEventListener('dragover',e=>{e.preventDefault();ch.classList.add('drag')});
+ch.addEventListener('dragleave',()=>ch.classList.remove('drag'));
+ch.addEventListener('drop',e=>{e.preventDefault();ch.classList.remove('drag');arquivos([...e.dataTransfer.files])});
+
+/* adicionar pessoa */
+function abrirAdd(q=''){
+ $('#nm').value='';$('#us').value=q.replace(/[^a-z0-9_]/g,'');$('#err').textContent='';
+ $('#dlg').showModal();$('#us').focus();
+}
+$('#add').onclick=()=>abrirAdd();
+$('#cx').onclick=()=>$('#dlg').close();
+function adicionar(){
+ const n=$('#nm').value.trim(),u=$('#us').value.trim().replace(/^@/,'').toLowerCase();
+ if(!RX.test(u)){$('#err').textContent='O usuário tem de 3 a 20 letras, números ou _ (sem espaço nem ponto).';return}
+ if(u===USER){$('#err').textContent='Esse é o seu próprio usuário.';return}
+ if(C.some(c=>c.u===u)){$('#err').textContent='Essa pessoa já está na sua lista.';return}
+ const c={id:uid(),n:n||u,u,m:[],custom:!!n};C.push(c);save();
+ $('#dlg').close();$('#q').value='';open(c.id);link(u);
+}
+$('#ok').onclick=adicionar;
+$('#dlg').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adicionar()}});
+
+/* grupos, som e ligações */
+const MAXG=10;
+const nome=u=>{if(u===USER)return 'Você';const c=C.find(x=>!x.g&&x.u===u);return c?c.n:(u||'?')};
+const on1=c=>c.g?c.mem.some(x=>x!==USER&&on(x)):on(c.u);
+const grupo=id=>C.find(x=>x.g&&x.id===id);
+
+/* som e avisos de mensagem */
+let som=true;try{som=localStorage.getItem('uc_snd')!=='0'}catch(e){}
+let AC=null;
+function ctx(){
+ if(!AC){const A=window.AudioContext||window.webkitAudioContext;if(!A)return null;AC=new A()}
+ if(AC.state==='suspended')AC.resume();
+ return AC;
+}
+['pointerdown','keydown'].forEach(ev=>addEventListener(ev,()=>ctx(),{once:true}));
+function nota(f,t,d,v){
+ const a=ctx();if(!a)return;
+ const o=a.createOscillator(),g=a.createGain(),s=a.currentTime+t;
+ o.type='sine';o.frequency.value=f;o.connect(g);g.connect(a.destination);
+ g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(v||0.25,s+0.02);g.gain.exponentialRampToValueAtTime(0.0001,s+d);
+ o.start(s);o.stop(s+d+0.05);
+}
+function tocar(k){if(k==='msg'){nota(880,0,0.18);nota(1320,0.12,0.3)}else{nota(660,0,0.35,0.3);nota(880,0.4,0.4,0.3)}}
+function notificar(t,b){
+ if(document.hasFocus()||!window.Notification||Notification.permission!=='granted')return;
+ try{const n=new Notification(t,{body:b,silent:true});n.onclick=()=>{try{window.focus()}catch(e){}}}catch(e){}
+}
+function avisoMsg(c,m){
+ if(c.id===cur&&document.hasFocus()&&!document.hidden)return;
+ if(som)tocar('msg');
+ notificar(c.g?c.n+' · '+nome(m.by):c.n,m.f?'Enviou um arquivo: '+m.f.n:m.txt);
+ if(navigator.vibrate)navigator.vibrate(120);
+}
+const snd=$('#snd');
+snd.textContent=som?'🔔':'🔕';
+snd.onclick=()=>{som=!som;try{localStorage.setItem('uc_snd',som?'1':'0')}catch(e){}snd.textContent=som?'🔔':'🔕';if(som)tocar('msg');aviso(som?'Som de mensagem ligado.':'Som de mensagem desligado.')};
+
+/* grupos (até 10 pessoas, com você) */
+function novoGrupo(u,d){
+ if(typeof d.gid!=='string'||!/^[a-z0-9]{4,24}$/.test(d.gid))return;
+ if(!Array.isArray(d.mem)||d.mem.length>MAXG||!d.mem.every(x=>RX.test(x))||!d.mem.includes(USER)||!d.mem.includes(u)||d.own!==u)return;
+ let g=grupo(d.gid);
+ if(g){if(g.own!==u)return;g.n=String(d.n||g.n).slice(0,30);g.mem=d.mem.slice()}
+ else{g={id:d.gid,g:1,n:String(d.n||'Grupo').slice(0,30),mem:d.mem.slice(),own:u,m:[]};C.push(g);aviso('Você foi adicionado ao grupo '+g.n);if(som)tocar('msg')}
+ d.mem.forEach(x=>{if(x!==USER){if(!C.some(c=>!c.g&&c.u===x))pessoa(x,x);link(x)}});
+ sv();list();if(g.id===cur)cab();
+}
+function anunciar(g){
+ g.mem.forEach(x=>{if(x!==USER){if(on(x))conns[x].send({t:'gnew',gid:g.id,n:g.n,mem:g.mem,own:USER});link(x)}});
+}
+let gmodo='new';
+function abrirGrupo(info){
+ gmodo=info?'info':'new';const g=info?me():null;
+ const podeAdd=!info||(g.own===USER&&g.mem.length<MAXG);
+ $('#gt').textContent=info?g.n:'Novo grupo';
+ $('#gnl').hidden=!!info;$('#gn').value='';$('#gerr').textContent='';
+ const l=$('#gl');l.replaceChildren();
+ if(info){
+  g.mem.forEach(x=>l.append(h('div',{class:'gi'},(x===USER?'Você':nome(x))+(x===g.own?' (dono)':''),h('span',{class:'mut'},x===USER?'':(on(x)?'· online':'· offline')))));
+  if(podeAdd)l.append(h('div',{class:'mut',style:'margin:8px 0 4px'},'Adicionar mais pessoas:'));
+ }
+ if(podeAdd){
+  const lista=C.filter(c=>!c.g&&(!info||!g.mem.includes(c.u)));
+  lista.forEach(c=>l.append(h('label',{class:'gi'},h('input',{type:'checkbox',value:c.u}),c.n)));
+  if(!lista.length)l.append(h('div',{class:'mut'},info?'Todos os seus contatos já estão no grupo.':'Adicione amigos primeiro para criar um grupo.'));
+ }
+ $('#gok').textContent=info?'Adicionar':'Criar grupo';$('#gok').hidden=!podeAdd;
+ $('#gdlg').showModal();
+}
+$('#newg').onclick=()=>abrirGrupo(false);
+$('#gx').onclick=()=>$('#gdlg').close();
+$('#gok').onclick=()=>{
+ const sel=[...$('#gl').querySelectorAll('input:checked')].map(i=>i.value);
+ if(gmodo==='new'){
+  const n=$('#gn').value.trim();
+  if(!n){$('#gerr').textContent='Dê um nome ao grupo.';return}
+  if(!sel.length){$('#gerr').textContent='Escolha pelo menos uma pessoa.';return}
+  if(sel.length>MAXG-1){$('#gerr').textContent='O grupo aceita até '+MAXG+' pessoas (com você).';return}
+  const g={id:uid(),g:1,n:n,mem:[USER].concat(sel),own:USER,m:[]};
+  C.push(g);anunciar(g);save();$('#gdlg').close();open(g.id);
+ }else{
+  const g=me();if(!g||g.own!==USER)return;
+  const novos=sel.filter(x=>!g.mem.includes(x));
+  if(g.mem.length+novos.length>MAXG){$('#gerr').textContent='O grupo aceita até '+MAXG+' pessoas (com você).';return}
+  g.mem=g.mem.concat(novos);anunciar(g);save();cab();list();$('#gdlg').close();
+ }
+};
+function enviarG(c,t){
+ const alvos=c.mem.filter(x=>x!==USER&&on(x));
+ if(!alvos.length){aviso('Ninguém do grupo está online agora.');return}
+ const m={id:uid(),txt:t,ts:Date.now()};
+ alvos.forEach(x=>conns[x].send({t:'msg',g:c.id,id:m.id,txt:t,ts:m.ts}));
+ $('#t').value='';$('#go').classList.remove('on');add(c,m);$('#t').focus();
+ if(alvos.length<c.mem.length-1)aviso('Entregue para '+alvos.length+' de '+(c.mem.length-1)+' (os outros estão offline).');
+}
+
+/* ligações de voz + compartilhar tela (a câmera nunca é usada) */
+let CALL=null,pendRing=null,ringT=null;
+if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){
+ const g0=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+ navigator.mediaDevices.getUserMedia=()=>g0({audio:true,video:false});
+}
+const gum=()=>navigator.mediaDevices.getUserMedia({audio:true,video:false});
+const ringStop=()=>{clearInterval(ringT);ringT=null};
+const ringStart=()=>{ringStop();tocar('ring');ringT=setInterval(()=>tocar('ring'),2200)};
+function iniciarCall(cid,g,tit,st,ok){
+ CALL={cid:cid,g:g,mic:st,calls:{},shares:{},ok:ok||[],t0:0,chamando:[],screen:null,mute:false,telaDe:null};
+ $('#ctit').textContent=tit;$('#cst').textContent='Chamando...';
+ $('#csc').hidden=!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia)||/Android/i.test(navigator.userAgent);
+ $('#cmu').textContent='🎤';$('#cmu').classList.remove('off');$('#csc').classList.remove('off');$('#cv').hidden=true;
+ $('#call').hidden=false;CALL.iv=setInterval(atualizaCall,1000);
+}
+function atualizaCall(){
+ if(!CALL)return;
+ const n=Object.keys(CALL.calls).length,s=CALL.t0?Math.floor((Date.now()-CALL.t0)/1000):0;
+ $('#cst').textContent=CALL.t0?String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')+' · '+(n+1)+' na ligação':'Chamando...';
+}
+function fim(msg){
+ if(!CALL)return;
+ const K=CALL;CALL=null;
+ clearInterval(K.iv);clearTimeout(K.to);
+ new Set(Object.keys(K.calls).concat(K.chamando||[])).forEach(x=>{if(on(x))conns[x].send({t:'cend',cid:K.cid})});
+ Object.values(K.calls).concat(Object.values(K.shares)).forEach(k=>{try{k.close()}catch(e){}});
+ K.mic.getTracks().forEach(t=>t.stop());if(K.screen)K.screen.getTracks().forEach(t=>t.stop());
+ $('#call').hidden=true;$('#cv').hidden=true;$('#vid').srcObject=null;$('#aud').replaceChildren();
+ if(msg)aviso(msg);
+}
+async function ligar(){
+ const c=me();if(!c)return;
+ if(CALL){aviso('Você já está em uma ligação.');return}
+ if(!P||!P.open){aviso('Sem conexão com a internet.');return}
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){aviso('Este aparelho não permite ligações.');return}
+ const ok=c.g?c.mem.filter(x=>x!==USER):[c.u],al=ok.filter(x=>on(x));
+ if(!al.length){aviso(c.g?'Ninguém do grupo está online agora.':c.n+' está offline.');return}
+ let st;try{st=await gum()}catch(e){aviso('Não consegui usar o microfone. Verifique a permissão.');return}
+ if(CALL){st.getTracks().forEach(t=>t.stop());return}
+ const cid=uid();iniciarCall(cid,c.g?c.id:null,c.n,st,ok);CALL.chamando=al.slice();
+ al.forEach(x=>conns[x].send({t:'cring',cid:cid,g:c.g?c.id:undefined,n:c.n}));
+ CALL.to=setTimeout(()=>{if(CALL&&CALL.cid===cid&&!CALL.t0)fim('Ninguém atendeu.')},45000);
+}
+function mostrarRing(u,d){
+ let g=d.g?grupo(d.g):null;if(g&&!g.mem.includes(u))g=null;
+ const tit=g?g.n+' · '+nome(u):nome(u);
+ pendRing={u:u,cid:d.cid,g:g?g.id:null,tit:tit};
+ $('#rt').textContent=tit;$('#ring').hidden=false;ringStart();
+ notificar('📞 Ligação',tit+' está te ligando');
+ pendRing.to=setTimeout(fecharRing,45000);
+}
+function fecharRing(){if(pendRing)clearTimeout(pendRing.to);pendRing=null;$('#ring').hidden=true;ringStop()}
+$('#rno').onclick=()=>{if(pendRing&&on(pendRing.u))conns[pendRing.u].send({t:'cbusy',cid:pendRing.cid});fecharRing()};
+$('#rok').onclick=async()=>{
+ const r=pendRing;if(!r)return;fecharRing();
+ if(CALL){aviso('Você já está em uma ligação.');return}
+ let st;try{st=await gum()}catch(e){aviso('Não consegui usar o microfone. Verifique a permissão.');return}
+ if(!on(r.u)){st.getTracks().forEach(t=>t.stop());aviso('Quem ligou já saiu.');return}
+ const g=r.g?grupo(r.g):null;
+ iniciarCall(r.cid,r.g,r.tit,st,g?g.mem.filter(x=>x!==USER):[r.u]);
+ conns[r.u].send({t:'cjoin',cid:r.cid});
+ CALL.to=setTimeout(()=>{if(CALL&&!CALL.t0)fim('Não consegui conectar na ligação.')},20000);
+};
+function sinal(u,d){
+ if(d.t==='cring'){
+  if(CALL||pendRing){if(on(u))conns[u].send({t:'cbusy',cid:d.cid});return}
+  mostrarRing(u,d);
+ }else if(d.t==='cbusy'){
+  if(CALL&&CALL.cid===d.cid&&!CALL.t0){
+   CALL.chamando=CALL.chamando.filter(x=>x!==u);
+   if(!CALL.chamando.length)fim(nome(u)+' não atendeu a ligação.');else aviso(nome(u)+' recusou.');
+  }
+ }else if(d.t==='cjoin'){
+  if(CALL&&CALL.cid===d.cid&&CALL.ok.includes(u)&&on(u))conns[u].send({t:'cin',cid:d.cid,list:[USER].concat(Object.keys(CALL.calls).filter(x=>x!==u))});
+ }else if(d.t==='cin'){
+  if(CALL&&CALL.cid===d.cid&&CALL.ok.includes(u))(Array.isArray(d.list)?d.list:[]).slice(0,10).forEach(x=>{if(RX.test(x)&&CALL.ok.includes(x)&&!CALL.calls[x])chamarPar(x)});
+ }else if(d.t==='cend'){
+  if(pendRing&&pendRing.cid===d.cid&&pendRing.u===u)fecharRing();
+  if(CALL&&CALL.cid===d.cid)sairPar(u);
+ }
+}
+function chamarPar(x){
+ if(!P||!P.open||!CALL)return;
+ ligarCall(x,P.call('ucht-'+x,CALL.mic,{metadata:{cid:CALL.cid,k:'voz'}}));
+}
+function ligarCall(x,call){
+ CALL.calls[x]=call;
+ call.on('stream',s=>{
+  if(!CALL||CALL.calls[x]!==call)return;
+  let a=document.getElementById('a_'+x);
+  if(!a){a=h('audio',{id:'a_'+x,autoplay:'',playsinline:''});$('#aud').append(a)}
+  a.srcObject=s;const p=a.play();if(p&&p.catch)p.catch(()=>{});
+  if(!CALL.t0){CALL.t0=Date.now();clearTimeout(CALL.to)}
+  if(CALL.screen)enviarTela(x);
+  atualizaCall();
+ });
+ call.on('close',()=>{if(CALL&&CALL.calls[x]===call)sairPar(x)});
+ call.on('error',()=>{});
+}
+function chamadaRecebida(call){
+ const u=String(call.peer).slice(5),md=call.metadata||{};
+ if(!CALL||md.cid!==CALL.cid||!RX.test(u)||!CALL.ok.includes(u)){try{call.close()}catch(e){}return}
+ if(md.k==='tela'){call.answer();call.on('stream',s=>mostrarTela(u,s));call.on('close',()=>tiraTela(u));return}
+ call.answer(CALL.mic);ligarCall(u,call);
+}
+function sairPar(x){
+ if(!CALL)return;
+ const k=CALL.calls[x];if(k){delete CALL.calls[x];try{k.close()}catch(e){}}
+ const s=CALL.shares[x];if(s){delete CALL.shares[x];try{s.close()}catch(e){}}
+ const a=document.getElementById('a_'+x);if(a)a.remove();
+ tiraTela(x);
+ if(!Object.keys(CALL.calls).length&&CALL.t0)fim('Ligação encerrada.');else atualizaCall();
+}
+function mostrarTela(u,s){
+ if(!CALL)return;CALL.telaDe=u;
+ const v=$('#vid');v.srcObject=s;$('#cv').hidden=false;const p=v.play();if(p&&p.catch)p.catch(()=>{});
+ aviso(nome(u)+' está compartilhando a tela.');
+}
+function tiraTela(u){if(CALL&&CALL.telaDe===u){CALL.telaDe=null;$('#cv').hidden=true;$('#vid').srcObject=null}}
+async function compartilhar(){
+ if(!CALL)return;
+ if(CALL.screen){paraTela();return}
+ let s;try{s=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false})}catch(e){aviso('Não foi possível compartilhar a tela.');return}
+ if(!CALL){s.getTracks().forEach(t=>t.stop());return}
+ CALL.screen=s;$('#csc').classList.add('off');
+ s.getVideoTracks()[0].addEventListener('ended',paraTela);
+ Object.keys(CALL.calls).forEach(enviarTela);
+}
+function enviarTela(x){
+ if(!CALL||!CALL.screen||CALL.shares[x]||!P||!P.open)return;
+ const k=P.call('ucht-'+x,CALL.screen,{metadata:{cid:CALL.cid,k:'tela'}});
+ CALL.shares[x]=k;k.on('close',()=>{if(CALL&&CALL.shares[x]===k)delete CALL.shares[x]});k.on('error',()=>{});
+}
+function paraTela(){
+ if(!CALL||!CALL.screen)return;
+ CALL.screen.getTracks().forEach(t=>t.stop());CALL.screen=null;
+ Object.values(CALL.shares).forEach(k=>{try{k.close()}catch(e){}});CALL.shares={};$('#csc').classList.remove('off');
+}
+$('#csc').onclick=compartilhar;
+$('#cen').onclick=()=>fim('Ligação encerrada.');
+$('#cmu').onclick=()=>{
+ if(!CALL)return;CALL.mute=!CALL.mute;
+ CALL.mic.getAudioTracks().forEach(t=>{t.enabled=!CALL.mute});
+ $('#cmu').classList.toggle('off',CALL.mute);$('#cmu').textContent=CALL.mute?'🔇':'🎤';
+};
+$('#cfs').onclick=()=>{const v=$('#vid');if(v.requestFullscreen)v.requestFullscreen()};
+snd.title='Som de mensagem';
+
+/* atualização dentro do app (só no PC) */
+const APP_VERSION='1.4.0';
+function updUI(txt,btn,fn){
+ $('#updt').textContent=txt;const b=$('#updb');b.hidden=!btn;b.textContent=btn||'';b.onclick=fn||null;$('#upd').hidden=false;
+}
+if(window.desktop){
+ let baixando=false;
+ window.desktop.aoAtualizar(d=>{
+  if(d.t==='disponivel')updUI('Nova versão '+d.v+' disponível','Atualizar',()=>{baixando=true;updUI('Baixando atualização... 0%');window.desktop.baixar()});
+  else if(d.t==='progresso')updUI('Baixando atualização... '+d.p+'%');
+  else if(d.t==='pronto'){baixando=false;updUI('Atualização pronta para instalar.','Reiniciar e instalar',()=>window.desktop.instalar())}
+  else if(d.t==='erro'&&baixando){baixando=false;updUI('Não foi possível atualizar agora.','Tentar de novo',()=>{$('#upd').hidden=true;window.desktop.verificar()})}
+ });
+ const verificar=()=>window.desktop.verificar();
+ setTimeout(verificar,4000);setInterval(verificar,4*3600*1000);
+}
+$('#meb').title='universeChat '+APP_VERSION+' · trocar nome';
+
+/* início */
+$('#meb').textContent=U;
+list();
+if(!U||!USER)boasVindas(U?'Escolha seu @usuário único: é com ele que seus amigos vão te achar.':'');
+else startNet();
+
+/* celular: voltar, segundo plano */
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){save();return}
+ if(P&&P.open)C.forEach(c=>c.g||link(c.u));else if(P&&P.disconnected&&!P.destroyed)P.reconnect();
+});
+if(nativo&&Capacitor.Plugins.App)Capacitor.Plugins.App.addListener('backButton',()=>{
+ if($('#dlg').open)$('#dlg').close();
+ else if(!$('#welcome').hidden){}
+ else if(cur)back();
+ else Capacitor.Plugins.App.exitApp();
+});
+</script>
+</body>
+</html>
