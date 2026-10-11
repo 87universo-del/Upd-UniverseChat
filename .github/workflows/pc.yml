@@ -1,0 +1,50 @@
+name: Criar versao do PC
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+permissions:
+  contents: write
+jobs:
+  versao:
+    runs-on: ubuntu-latest
+    outputs:
+      v: ${{ steps.v.outputs.v }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        run: |
+          V=$(grep -oP "APP_VERSION='\K[0-9.]+" index.html | head -1)
+          echo "v=$V" >> "$GITHUB_OUTPUT"
+      - name: Criar release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "v${{ steps.v.outputs.v }}" >/dev/null 2>&1 || gh release create "v${{ steps.v.outputs.v }}" --title "universeChat ${{ steps.v.outputs.v }}" --notes "Baixe o instalador do PC (.exe) nos arquivos abaixo."
+
+  desktop:
+    needs: versao
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Montar e criar o instalador do PC
+        shell: bash
+        run: |
+          mkdir desktop
+          cp index.html main.js preload.js desktop/
+          cp package.desktop.json desktop/package.json
+          cd desktop
+          npm version "${{ needs.versao.outputs.v }}" --no-git-tag-version --allow-same-version
+          npm install
+          cp node_modules/peerjs/dist/peerjs.min.js peerjs.min.js || cp node_modules/peerjs/dist/peerjs.js peerjs.min.js
+          npx electron-builder --win nsis --publish never
+      - name: Publicar o instalador
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd desktop/dist
+          gh release upload "v${{ needs.versao.outputs.v }}" universeChat-Setup-*.exe universeChat-Setup-*.exe.blockmap latest.yml --clobber
